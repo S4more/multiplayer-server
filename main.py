@@ -2,77 +2,44 @@ import asyncio
 import websockets
 import logging
 import json
+from events.mouse import Mouse
+from events.join import Join
+from events.vote import Vote
+
+from managers.connection_manager import ConnectionManager
+from managers.event_manager import EventManager
 
 STATE = {"value": 0}
 
 logging.basicConfig()
 
+eventManager = EventManager()
+connectionManager = ConnectionManager(eventManager)
+
 USERS = set()
-mouse_moves = {}
+mouse = Mouse()
 
-
-async def hello(websocket, path):
-    name = await websocket.recv()
-    print(f"< {name}")
-    greeting = f"Hello, {name}!"
-
-    await websocket.send(greeting)
-    print(f"> {greeting}")
-
-
-def state_event():
-    return json.dumps({"type": "state", **STATE})
-
-def user_event():
-    return json.dumps({"type": "users", "count": len(USERS)})
-
-def cords_event():
-    return json.dumps({"type": "mouse_move", "cords": [mouse_moves[ws] for ws in mouse_moves]})
-
-async def notify_users():
-    if USERS:   # asyncio doesn't accept an empty lsit
-        message = user_event()
-        await asyncio.wait([user.send(message) for user in USERS])
-
-async def notify_state():
-    if USERS:   # asyncio doesn't accept an empty lsit
-        message = state_event()
-        await asyncio.wait([user.send(message) for user in USERS])
-
-async def notify_cords():
-    if USERS:
-        message = cords_event()
-        await asyncio.wait([user.send(message) for user in USERS])
-
-async def register(websocket):
-    USERS.add(websocket)
-    await notify_users()
-
-async def unregister(websocket):
-    USERS.remove(websocket)
-    await notify_users()
-
-async def counter(websocket, path):
-    await register(websocket)
+async def counter(websocket, path): #CHANGE TO RECEIVER
+    await connectionManager.register(websocket)
     try:
-        await websocket.send(state_event())
-        async for message in websocket:
+        #This needs to be changed for "on join" methods
+        await websocket.send(eventManager.getEventByClassName("Vote").response())
+        async for message in websocket: # It stays here until the user closes the connection.
             data = json.loads(message)
-            print(data)
-            if data["action"] == "minus":
-                STATE["value"] -= 1
-                await notify_state()
-            elif data["action"] == "plus":
-                STATE["value"] += 1
-                await notify_state()
-            elif data["action"] == "mouse_move":
-                mouse_moves[websocket] = data["cords"]
-                await notify_cords()
 
+
+            #We are not passing who is the caller to the event. Should everyone
+            #have the right to access the caller socket? What if we had something like
+            #a class that holds a reference to the connections, to the caller... etc
+
+            await eventManager.forward_event(data, connectionManager.connections)
+            if data["action"] == "mouse_move":
+                mouse.handle(websocket, data["cords"])
+                await mouse.notify(USERS)
             else:
                 logging.error(f"unsupported event: {data}")
     finally:
-        await unregister(websocket)
+        await connectionManager.unregister(websocket)
 
 
 start_server = websockets.serve(counter, "localhost", 8765)

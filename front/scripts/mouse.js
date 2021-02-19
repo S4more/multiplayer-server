@@ -2,6 +2,7 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var websocket = new WebSocket("ws://127.0.0.1:8765/");
 var cords = [[0,0]]
+var local_cords = [[0, 0]]
 
 websocket.onmessage = function (event) {
     data = JSON.parse(event.data);
@@ -19,6 +20,7 @@ websocket.onmessage = function (event) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
     for (let i = 0; i < cords.length; i++){
         ctx.fillRect(cords[i][0] - 5, cords[i][1] -5, 10, 10);
     }
@@ -26,7 +28,8 @@ function draw() {
 
 
 canvas.addEventListener('mousemove', e => {
+    local_cords = [e.offsetX, e.offsetY];
+    ctx.fillStyle = "#FF0000";
+    ctx.fillRect(local_cords[0] - 5, local_cords[1] - 5, 10, 10)
     websocket.send(JSON.stringify({"action":"mouse_move", "cords": [e.offsetX, e.offsetY]}))
-//    ctx.clearRect(0, 0, canvas.width, canvas.height);
-//    ctx.fillRect(e.offsetX - 5, e.offsetY - 5, 10, 10);
 })

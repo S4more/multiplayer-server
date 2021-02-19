@@ -62,7 +62,7 @@
             websocket.onmessage = function (event) {
                 data = JSON.parse(event.data);
                 switch (data.type) {
-                    case 'state':
+                    case 'current':
                         value.textContent = data.value;
                         break;
                     case 'users':
