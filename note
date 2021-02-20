@@ -1,0 +1,14 @@
+There are two types of events:
+
+    - User sending data and actively provoking an event
+    - Server events that may or may not be triggered by the user.
+        - Like when a user Join a game, it makes non sense for the
+        user to call anything like "tellImHere()"
+        - But it does make sense for the server to care that
+        other players need to know that the user arrived.
+
+    - ALL the user evens needs to contain a user class, or at least,
+        the user configs.
+        I think it is a good idea to have the data as a class, so I can 
+        add or modify stuff easier. A simple way to manipulate data in 
+        the server. ( In the case it is ever needed)

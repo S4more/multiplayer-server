@@ -3,10 +3,11 @@ import asyncio
 from .Events import Event
 
 class Vote(Event):
-    type = "plus"
+    type = "vote"
     current = 0
 
-    def handle(self, value):
+    def handle(self, player, value):
+        print(f"Player {player.ws.remote_address} just voted")
         self.current = self.current + 1 if value == "plus" else self.current - 1
 
     def response(self):
@@ -15,4 +16,4 @@ class Vote(Event):
     async def notify(self, USERS):
         if USERS:
             message = self.response()
-            await asyncio.wait([user.send(message) for user in USERS])
+            await asyncio.wait([USERS[user].ws.send(message) for user in USERS])

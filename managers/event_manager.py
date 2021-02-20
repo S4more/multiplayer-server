@@ -32,9 +32,13 @@ class EventManager:
         '''Remove an event based on a instace from the EventManager'''
         self.events.remove(event)
 
-    async def forward_event(self, data, users):
+    async def forward_event(self, data, player, users):
         '''Forward the websocket data to its respective event.'''
+        # Inject all the users in data.
+        data['users'] = users
         for event in self.events:
             if (data["action"] == event.type):
-                event.handle(data["action"])
-                await event.notify(users)
+                event.handle(player, data['value'])
+                await event.notify(users) # it doesn't make any sense
+                return
+        print(f" Action {data['action']} is not registered.")

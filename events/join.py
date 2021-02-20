@@ -14,4 +14,4 @@ class Join(Event):
     async def notify(self, USERS):
         if USERS:
             message = self.response(USERS)
-            await asyncio.wait([user.send(message) for user in USERS])
+            await asyncio.wait([USERS[user].ws.send(message) for user in USERS])

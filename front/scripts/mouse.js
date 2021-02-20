@@ -29,7 +29,5 @@ function draw() {
 
 canvas.addEventListener('mousemove', e => {
     local_cords = [e.offsetX, e.offsetY];
-    ctx.fillStyle = "#FF0000";
-    ctx.fillRect(local_cords[0] - 5, local_cords[1] - 5, 10, 10)
-    websocket.send(JSON.stringify({"action":"mouse_move", "cords": [e.offsetX, e.offsetY]}))
+    websocket.send(JSON.stringify({"action":"mouse_move", 'value': [e.offsetX, e.offsetY]}))
 })
