@@ -10,7 +10,7 @@ class Mouse(Event):
 
 
     def response(self, users):
-        return json.dumps({"type": self.type, "cords": [user.mouse_cords for user in users]})
+        return json.dumps({"type": self.type, "cords": [users[user].mouse_cords for user in users]})
 
     async def notify(self, users):
         if users:
